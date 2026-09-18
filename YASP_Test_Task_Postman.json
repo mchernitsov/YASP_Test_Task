@@ -1,0 +1,3089 @@
+{
+  "info": {
+    "_postman_id": "e21834ba-a512-40ff-8784-a4a2966e9fe7",
+    "name": "YASP Test Task",
+    "description": "Набор тест-кейсов для [https://restful-booker.herokuapp.com/apidoc/index.html](https://restful-booker.herokuapp.com/apidoc/index.htmlСодержит)\n\nСодержит позитивные и негативные сценарии.\n\nПорядок запуска:\n\n1.  Auth\n2.  Ping\n3.  Booking - Positive\n4.  Booking - Negative (не зависиn от позитивных данных, использует фиксированные ID)\n5.  Booking - Sort\n    \n\nПеременные:\n\n*   baseUrl — базовый URL API\n*   token — заполняется автоматически после POST /auth\n*   basicAuthHeader - токен Basic аутентификации\n*   bookingId — заполняется автоматически после POST /booking\n*   bookingId2 — заполняется автоматически после POST /booking (Auth)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "20363842"
+  },
+  "item": [
+    {
+      "name": "1 Auth",
+      "item": [
+        {
+          "name": "✅ POST Get Token (valid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has token\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"token\");",
+                  "    pm.expect(jsonData.token).to.be.a(\"string\").and.not.empty;",
+                  "});",
+                  "",
+                  "const jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"token\", jsonData.token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            },
+            "description": "Получение токена. Сохраняется в {{token}}."
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Get Token (invalid creds)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has no token\", () => {",
+                  "    pm.expect(pm.response.json()).to.not.have.property(\"token\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"incorrectuser\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            },
+            "description": "Использование некорректных учетных данных"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Get Token (empty body)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"No token returned\", () => {",
+                  "    pm.expect(pm.response.json()).to.not.have.property(\"token\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            },
+            "description": "Использование пустого тела запроса для авторизации"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2 Ping",
+      "item": [
+        {
+          "name": "✅ GET Healthcheck",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ping",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ping"
+              ]
+            },
+            "description": "Проверка отклика сервера"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3 Booking - Positive",
+      "item": [
+        {
+          "name": "✅ POST Create Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 (BookingId is ${bookingId})\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains bookingid and booking\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"bookingid\");",
+                  "    pm.expect(jsonData).to.have.property(\"booking\");",
+                  "});",
+                  "",
+                  "pm.test(\"Booking data matches request\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.booking.firstname).to.eql(reqBody.firstname);",
+                  "    pm.expect(jsonData.booking.lastname).to.eql(reqBody.lastname);",
+                  "    pm.expect(jsonData.booking.totalprice).to.eql(reqBody.totalprice);",
+                  "    pm.expect(jsonData.booking.depositpaid).to.eql(reqBody.depositpaid);",
+                  "    pm.expect(jsonData.booking.bookingdates.checkin).to.eql(reqBody.bookingdates.checkin);",
+                  "    pm.expect(jsonData.booking.bookingdates.checkout).to.eql(reqBody.bookingdates.checkout);",
+                  "    pm.expect(jsonData.booking.additionalneeds).to.eql(reqBody.additionalneeds);",
+                  "});",
+                  "",
+                  "const jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"bookingId\", jsonData.bookingid);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"John\",\n  \"lastname\": \"Doe\",\n  \"totalprice\": 250,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-08-01\",\n    \"checkout\": \"2026-08-03\"\n  },\n  \"additionalneeds\": \"Extra bed\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Создание брони, корректные данные"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ POST Create Booking (XML)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const converted = xml2Json(pm.response.text());",
+                  "const root = converted[\"created-booking\"];",
+                  "const booking = Array.isArray(root) ? root[0].booking : root.booking;",
+                  "const value = (field) => {",
+                  "const result = booking[field];",
+                  "return Array.isArray(result) ? result[0] : result;",
+                  "};",
+                  "",
+                  "pm.test(\"Response contains bookingid and booking\", () => {",
+                  "    pm.expect(root).to.have.property(\"bookingid\");",
+                  "    pm.expect(root).to.have.property(\"booking\");",
+                  "});",
+                  "",
+                  "pm.test(\"Booking data matches request\", () => {",
+                  "    pm.expect(value(\"firstname\")).to.eql(\"Noah\");",
+                  "    pm.expect(value(\"lastname\")).to.eql(\"White\");",
+                  "    pm.expect(Number(value(\"totalprice\"))).to.eql(1200);",
+                  "    pm.expect(String(value(\"depositpaid\"))).to.eql(\"true\");",
+                  "    pm.expect(value(\"bookingdates\")).to.exist;",
+                  "    const datesValue = value(\"bookingdates\");",
+                  "    const dates = Array.isArray(datesValue) ? datesValue[0] : datesValue;",
+                  "    const dateValue = (field) => Array.isArray(dates[field]) ? dates[field][0] : dates[field];",
+                  "    pm.expect(dateValue(\"checkin\")).to.eql(\"2026-09-01\");",
+                  "    pm.expect(dateValue(\"checkout\")).to.eql(\"2026-09-05\");",
+                  "    pm.expect(value(\"additionalneeds\")).to.eql(\"Late checkout\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/xml",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/xml"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<booking>\n    <firstname>Noah</firstname>\n    <lastname>White</lastname>\n    <totalprice>1200</totalprice>\n    <depositpaid>true</depositpaid>\n    <bookingdates>\n      <checkin>2026-09-01</checkin>\n      <checkout>2026-09-05</checkout>\n    </bookingdates>\n    <additionalneeds>Late checkout</additionalneeds>\n  </booking>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Создание брони, корректные данные, тип данных - XML"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ POST Create Booking (cyrilic fields)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains bookingid and booking\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"bookingid\");",
+                  "    pm.expect(jsonData).to.have.property(\"booking\");",
+                  "});",
+                  "",
+                  "pm.test(\"Booking data matches request\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.booking.firstname).to.eql(reqBody.firstname);",
+                  "    pm.expect(jsonData.booking.lastname).to.eql(reqBody.lastname);",
+                  "    pm.expect(jsonData.booking.totalprice).to.eql(reqBody.totalprice);",
+                  "    pm.expect(jsonData.booking.depositpaid).to.eql(reqBody.depositpaid);",
+                  "    pm.expect(jsonData.booking.bookingdates.checkin).to.eql(reqBody.bookingdates.checkin);",
+                  "    pm.expect(jsonData.booking.bookingdates.checkout).to.eql(reqBody.bookingdates.checkout);",
+                  "    pm.expect(jsonData.booking.additionalneeds).to.eql(reqBody.additionalneeds);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Антон\",\n  \"lastname\": \"Макарский\",\n  \"totalprice\": 111,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2024-01-01\",\n    \"checkout\": \"2024-01-05\"\n  },\n  \"additionalneeds\": \"Завтрак\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Создание брони, корректные данные, использование кириллицы"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ POST Create Booking for Auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains bookingid and booking\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"bookingid\");",
+                  "    pm.expect(jsonData).to.have.property(\"booking\");",
+                  "});",
+                  "",
+                  "pm.test(\"Booking data matches request\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.booking.firstname).to.eql(reqBody.firstname);",
+                  "    pm.expect(jsonData.booking.lastname).to.eql(reqBody.lastname);",
+                  "    pm.expect(jsonData.booking.totalprice).to.eql(reqBody.totalprice);",
+                  "    pm.expect(jsonData.booking.depositpaid).to.eql(reqBody.depositpaid);",
+                  "    pm.expect(jsonData.booking.bookingdates.checkin).to.eql(reqBody.bookingdates.checkin);",
+                  "    pm.expect(jsonData.booking.bookingdates.checkout).to.eql(reqBody.bookingdates.checkout);",
+                  "    pm.expect(jsonData.booking.additionalneeds).to.eql(reqBody.additionalneeds);",
+                  "});",
+                  "",
+                  "const jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"bookingId2\", jsonData.bookingid);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Jane\",\n  \"lastname\": \"Doe\",\n  \"totalprice\": 200,\n  \"depositpaid\": false,\n  \"bookingdates\": {\n    \"checkin\": \"2026-08-01\",\n    \"checkout\": \"2026-08-03\"\n  },\n  \"additionalneeds\": \"Child chair\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Создание брони, корректные данные, использование токена из документации вместо Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ GET All Bookings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", () => {",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Each item has bookingid\", () => {",
+                  "    pm.response.json().forEach(item => {",
+                  "        pm.expect(item).to.have.property(\"bookingid\");",
+                  "        pm.expect(item.bookingid).to.be.a(\"number\");",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Получение списка всех бронирований"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ GET Booking by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Required fields exist in response\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"firstname\");",
+                  "    pm.expect(jsonData).to.have.property(\"lastname\");",
+                  "    pm.expect(jsonData).to.have.property(\"totalprice\");",
+                  "    pm.expect(jsonData).to.have.property(\"depositpaid\");",
+                  "    pm.expect(jsonData).to.have.property(\"bookingdates\");",
+                  "    pm.expect(jsonData.bookingdates).to.have.property(\"checkin\");",
+                  "    pm.expect(jsonData.bookingdates).to.have.property(\"checkout\");",
+                  "    pm.expect(jsonData).to.have.property(\"additionalneeds\");",
+                  "});",
+                  "",
+                  "pm.test(\"Fields contain data with correct types\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.firstname).to.be.a(\"string\");",
+                  "    pm.expect(jsonData.lastname).to.be.a(\"string\");",
+                  "    pm.expect(jsonData.totalprice).to.be.a(\"number\");",
+                  "    pm.expect(jsonData.depositpaid).to.be.a(\"boolean\");",
+                  "    pm.expect(jsonData.bookingdates.checkin).to.be.a(\"string\");",
+                  "    pm.expect(jsonData.bookingdates.checkout).to.be.a(\"string\");",
+                  "    pm.expect(jsonData.additionalneeds).to.be.a(\"string\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Получение информации о брони по ID"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ GET Booking by ID (XML)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const first = (val) => Array.isArray(val) ? val[0] : val;",
+                  "const converted = xml2Json(pm.response.text());",
+                  "const booking = first(converted[\"booking\"]);",
+                  "const value = (field) => {",
+                  "const result = booking[field];",
+                  "return Array.isArray(result) ? result[0] : result;",
+                  "};",
+                  "",
+                  "",
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Booking data matches request\", () => {",
+                  "    pm.expect(booking).to.include.keys(",
+                  "    \"firstname\", \"lastname\", \"totalprice\",",
+                  "    \"depositpaid\", \"bookingdates\", \"additionalneeds\")",
+                  "});",
+                  "",
+                  "pm.test(\"Fields contain data with correct types\", () => {",
+                  "    pm.expect(value(\"firstname\")).to.be.a(\"string\");",
+                  "    pm.expect(value(\"lastname\")).to.be.a(\"string\");",
+                  "    pm.expect(Number(value(\"totalprice\"))).to.be.a(\"number\");",
+                  "    pm.expect(String(value(\"depositpaid\"))).to.be.a(\"string\");",
+                  "    pm.expect(value(\"bookingdates\")).to.exist;",
+                  "    const datesValue = value(\"bookingdates\");",
+                  "    const dates = Array.isArray(datesValue) ? datesValue[0] : datesValue;",
+                  "    const dateValue = (field) => Array.isArray(dates[field]) ? dates[field][0] : dates[field];",
+                  "    pm.expect(dateValue(\"checkin\")).to.be.a(\"string\");",
+                  "    pm.expect(dateValue(\"checkout\")).to.be.a(\"string\");",
+                  "    pm.expect(value(\"additionalneeds\")).to.be.a(\"string\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/xml",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Получение информации о брони по ID, данные в XML"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PUT Update Booking Cookie",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Data updated correctly\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.firstname).to.eql(reqBody.firstname);",
+                  "    pm.expect(jsonData.lastname).to.eql(reqBody.lastname);",
+                  "    pm.expect(jsonData.totalprice).to.eql(reqBody.totalprice);",
+                  "    pm.expect(jsonData.depositpaid).to.eql(reqBody.depositpaid);",
+                  "    pm.expect(jsonData.bookingdates.checkin).to.eql(reqBody.bookingdates.checkin);",
+                  "    pm.expect(jsonData.bookingdates.checkout).to.eql(reqBody.bookingdates.checkout);",
+                  "    pm.expect(jsonData.additionalneeds).to.eql(reqBody.additionalneeds);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Jerry\",\n  \"lastname\": \"Fisher\",\n  \"totalprice\": 756,\n  \"depositpaid\": false,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-01\",\n    \"checkout\": \"2026-09-05\"\n  },\n  \"additionalneeds\": \"Lunch\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Обновление данных брони, использование Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PUT Update Booking Cookie (XML)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const first = (val) => Array.isArray(val) ? val[0] : val;",
+                  "const converted = xml2Json(pm.response.text());",
+                  "const booking = first(converted[\"booking\"]);",
+                  "const value = (field) => {",
+                  "const result = booking[field];",
+                  "return Array.isArray(result) ? result[0] : result;",
+                  "};",
+                  "",
+                  "",
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Booking data matches request\", () => {",
+                  "    pm.expect(booking).to.include.keys(",
+                  "    \"firstname\", \"lastname\", \"totalprice\",",
+                  "    \"depositpaid\", \"bookingdates\", \"additionalneeds\")",
+                  "});",
+                  "",
+                  "",
+                  "pm.test(\"Fields contain data with correct types\", () => {",
+                  "    pm.expect(value(\"firstname\")).to.be.a(\"string\");",
+                  "    pm.expect(value(\"lastname\")).to.be.a(\"string\");",
+                  "    pm.expect(Number(value(\"totalprice\"))).to.be.a(\"number\");",
+                  "    pm.expect(String(value(\"depositpaid\"))).to.be.a(\"string\");",
+                  "    pm.expect(value(\"bookingdates\")).to.exist;",
+                  "    const datesValue = value(\"bookingdates\");",
+                  "    const dates = Array.isArray(datesValue) ? datesValue[0] : datesValue;",
+                  "    const dateValue = (field) => Array.isArray(dates[field]) ? dates[field][0] : dates[field];",
+                  "    pm.expect(dateValue(\"checkin\")).to.be.a(\"string\");",
+                  "    pm.expect(dateValue(\"checkout\")).to.be.a(\"string\");",
+                  "    pm.expect(value(\"additionalneeds\")).to.be.a(\"string\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/xml"
+              },
+              {
+                "key": "Accept",
+                "value": "application/xml",
+                "type": "text"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<booking>\n    <firstname>Mattew</firstname>\n    <lastname>Stivenson</lastname>\n    <totalprice>1000</totalprice>\n    <depositpaid>false</depositpaid>\n    <bookingdates>\n      <checkin>2026-09-12</checkin>\n      <checkout>2026-09-25</checkout>\n    </bookingdates>\n    <additionalneeds>Late checkin</additionalneeds>\n  </booking>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Обновление данных брони, использование Cookies, данные в XML"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PUT Update Booking Auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Data updated correctly\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.firstname).to.eql(reqBody.firstname);",
+                  "    pm.expect(jsonData.lastname).to.eql(reqBody.lastname);",
+                  "    pm.expect(jsonData.totalprice).to.eql(reqBody.totalprice);",
+                  "    pm.expect(jsonData.depositpaid).to.eql(reqBody.depositpaid);",
+                  "    pm.expect(jsonData.bookingdates.checkin).to.eql(reqBody.bookingdates.checkin);",
+                  "    pm.expect(jsonData.bookingdates.checkout).to.eql(reqBody.bookingdates.checkout);",
+                  "    pm.expect(jsonData.additionalneeds).to.eql(reqBody.additionalneeds);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{basicAuthHeader}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Jassie\",\n  \"lastname\": \"James\",\n  \"totalprice\": 222,\n  \"depositpaid\": false,\n  \"bookingdates\": {\n    \"checkin\": \"2026-08-02\",\n    \"checkout\": \"2026-08-04\"\n  },\n  \"additionalneeds\": \"Lunch\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId2}}"
+              ]
+            },
+            "description": "StartFragment\n\nОбновление данных брони, использование токена из документации\n\nEndFragment"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PATCH Partial Update (multiparams)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Specified fields updated, and other fields exist\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.firstname).to.eql(reqBody.firstname);",
+                  "    pm.expect(jsonData.totalprice).to.eql(reqBody.totalprice);",
+                  "    pm.expect(jsonData).to.have.property(\"lastname\");",
+                  "    pm.expect(jsonData).to.have.property(\"depositpaid\");",
+                  "    pm.expect(jsonData).to.have.property(\"bookingdates\");",
+                  "    pm.expect(jsonData).to.have.property(\"additionalneeds\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Jane\",\n  \"totalprice\": 123\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Частичное изменение данных брони (firstname, totalprice), авторизация через Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PATCH Partial Update (multiparams - XML)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const first = (val) => Array.isArray(val) ? val[0] : val;",
+                  "const converted = xml2Json(pm.response.text());",
+                  "const booking = first(converted[\"booking\"]);",
+                  "const value = (field) => {",
+                  "const result = booking[field];",
+                  "return Array.isArray(result) ? result[0] : result;",
+                  "};",
+                  "",
+                  "",
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Booking data matches request\", () => {",
+                  "    pm.expect(booking).to.include.keys(",
+                  "    \"firstname\", \"lastname\", \"totalprice\",",
+                  "    \"depositpaid\", \"bookingdates\", \"additionalneeds\")",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/xml"
+              },
+              {
+                "key": "Accept",
+                "value": "application/xml"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<booking>\n    <firstname>James</firstname>\n    <lastname>Bond</lastname>\n  </booking>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Частичное изменение данных брони (firstname, totalprice), авторизация через Cookies, данные в XML"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PATCH Partial Update (firstname)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Specified fields updated, and other fields exist\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.firstname).to.eql(reqBody.firstname);",
+                  "    pm.expect(jsonData).to.have.property(\"lastname\");",
+                  "    pm.expect(jsonData).to.have.property(\"totalprice\");",
+                  "    pm.expect(jsonData).to.have.property(\"depositpaid\");",
+                  "    pm.expect(jsonData).to.have.property(\"bookingdates\");",
+                  "    pm.expect(jsonData).to.have.property(\"additionalneeds\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Jason\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Частичное изменение данных брони (один параметр - firstname), авторизация через Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PATCH Partial Update (lastname)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Specified fields updated, and other fields exist\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.lastname).to.eql(reqBody.lastname);",
+                  "    pm.expect(jsonData).to.have.property(\"firstname\");",
+                  "    pm.expect(jsonData).to.have.property(\"totalprice\");",
+                  "    pm.expect(jsonData).to.have.property(\"depositpaid\");",
+                  "    pm.expect(jsonData).to.have.property(\"bookingdates\");",
+                  "    pm.expect(jsonData).to.have.property(\"additionalneeds\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lastname\": \"Bourne\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Частичное изменение данных брони (один параметр - lastname), авторизация через Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PATCH Partial Update (totalprice)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Specified fields updated, and other fields exist\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.totalprice).to.eql(reqBody.totalprice);",
+                  "    pm.expect(jsonData).to.have.property(\"firstname\");",
+                  "    pm.expect(jsonData).to.have.property(\"lastname\");",
+                  "    pm.expect(jsonData).to.have.property(\"depositpaid\");",
+                  "    pm.expect(jsonData).to.have.property(\"bookingdates\");",
+                  "    pm.expect(jsonData).to.have.property(\"additionalneeds\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"totalprice\": 1500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Частичное изменение данных брони (один параметр - totalprice), авторизация через Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PATCH Partial Update (depositpaid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Specified fields updated, and other fields exist\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.depositpaid).to.eql(reqBody.depositpaid);",
+                  "    pm.expect(jsonData).to.have.property(\"firstname\");",
+                  "    pm.expect(jsonData).to.have.property(\"lastname\");",
+                  "    pm.expect(jsonData).to.have.property(\"totalprice\");",
+                  "    pm.expect(jsonData).to.have.property(\"bookingdates\");",
+                  "    pm.expect(jsonData).to.have.property(\"additionalneeds\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"depositpaid\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Частичное изменение данных брони (один параметр - depositpaid), авторизация через Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PATCH Partial Update (bookingdates - all)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Specified fields updated, and other fields exist\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.bookingdates.checkin).to.eql(reqBody.bookingdates.checkin);",
+                  "    pm.expect(jsonData.bookingdates.checkout).to.eql(reqBody.bookingdates.checkout);",
+                  "    pm.expect(jsonData).to.have.property(\"firstname\");",
+                  "    pm.expect(jsonData).to.have.property(\"lastname\");",
+                  "    pm.expect(jsonData).to.have.property(\"totalprice\");",
+                  "    pm.expect(jsonData).to.have.property(\"depositpaid\");",
+                  "    pm.expect(jsonData).to.have.property(\"additionalneeds\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingdates\": {\n    \"checkin\": \"2026-08-10\",\n    \"checkout\": \"2026-08-15\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Частичное изменение данных брони (bookingdates - checkin + checkout), авторизация через Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PATCH Partial Update (bookingdates - checkin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Specified fields updated, and other fields exist\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.bookingdates.checkin).to.eql(reqBody.bookingdates.checkin);",
+                  "    pm.expect(jsonData).to.have.property(\"firstname\");",
+                  "    pm.expect(jsonData).to.have.property(\"lastname\");",
+                  "    pm.expect(jsonData).to.have.property(\"totalprice\");",
+                  "    pm.expect(jsonData).to.have.property(\"depositpaid\");",
+                  "    pm.expect(jsonData).to.have.property(\"additionalneeds\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingdates\": {\n    \"checkin\": \"2026-08-11\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Частичное изменение данных брони (один параметр bookingdates - checkin), авторизация через Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PATCH Partial Update (bookingdates - checkout)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Specified fields updated, and other fields exist\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.bookingdates.checkout).to.eql(reqBody.bookingdates.checkout);",
+                  "    pm.expect(jsonData).to.have.property(\"firstname\");",
+                  "    pm.expect(jsonData).to.have.property(\"lastname\");",
+                  "    pm.expect(jsonData).to.have.property(\"totalprice\");",
+                  "    pm.expect(jsonData).to.have.property(\"depositpaid\");",
+                  "    pm.expect(jsonData).to.have.property(\"additionalneeds\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingdates\": {\n    \"checkout\": \"2026-08-18\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Частичное изменение данных брони (один параметр bookingdates - checkout), авторизация через Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PATCH Partial Update (additionalneeds)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Specified fields updated, and other fields exist\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    const reqBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.additionalneeds).to.eql(reqBody.additionalneeds);",
+                  "    pm.expect(jsonData).to.have.property(\"firstname\");",
+                  "    pm.expect(jsonData).to.have.property(\"lastname\");",
+                  "    pm.expect(jsonData).to.have.property(\"totalprice\");",
+                  "    pm.expect(jsonData).to.have.property(\"depositpaid\");",
+                  "    pm.expect(jsonData).to.have.property(\"bookingdates\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"additionalneeds\": \"Lunch\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Частичное изменение данных брони (один параметр additionalneeds), авторизация через Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ DELETE Booking Cookie",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is 'Created'\", () => {",
+                  "    pm.expect(pm.response.text()).to.eql(\"Created\");",
+                  "});",
+                  "",
+                  "pm.test(\"Booking is deleted (GET returns 404)\", (done) => {",
+                  "    pm.sendRequest({",
+                  "        url: pm.collectionVariables.get(\"baseUrl\") + \"/booking/\" + pm.collectionVariables.get(\"bookingId\"),",
+                  "        method: \"GET\"",
+                  "    }, (err, res) => {",
+                  "        pm.expect(res).to.have.status(404);",
+                  "        done();",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "description": "Удаление брони, авторизация через Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ DELETE Booking Auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is 'Created'\", () => {",
+                  "    pm.expect(pm.response.text()).to.eql(\"Created\");",
+                  "});",
+                  "",
+                  "pm.test(\"Booking is deleted (GET returns 404)\", (done) => {",
+                  "    pm.sendRequest({",
+                  "        url: pm.collectionVariables.get(\"baseUrl\") + \"/booking/\" + pm.collectionVariables.get(\"bookingId2\"),",
+                  "        method: \"GET\"",
+                  "    }, (err, res) => {",
+                  "        pm.expect(res).to.have.status(404);",
+                  "        done();",
+                  "    });",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{basicAuthHeader}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId2}}"
+              ]
+            },
+            "description": "Удаление брони, авторизация с использованием токена из документации"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4 Booking - Negative",
+      "item": [
+        {
+          "name": "❌ GET Booking by ID (404 non-existing)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", () => {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is 'Not Found'\", () => {",
+                  "    pm.expect(pm.response.text()).to.eql(\"Not Found\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/987654321",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "987654321"
+              ]
+            },
+            "description": "Попытка получения данных о брони с несуществующим ID"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (empty body)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is not 200\", () => {",
+                  "    pm.expect(pm.response.code).to.not.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"No bookingid in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"bookingid\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование с пустым телом запроса"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (missing firstname)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is not 200\", () => {",
+                  "    pm.expect(pm.response.code).to.not.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"No bookingid in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"bookingid\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lastname\": \"User\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-10-01\",\n    \"checkout\": \"2026-10-05\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование без обязательного параметра firstname"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (missing lastname)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is not 200\", () => {",
+                  "    pm.expect(pm.response.code).to.not.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"No bookingid in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"bookingid\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Test\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-10-01\",\n    \"checkout\": \"2026-10-05\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование без обязательного параметра lastname"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (missing totalprice)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is not 200\", () => {",
+                  "    pm.expect(pm.response.code).to.not.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"No bookingid in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"bookingid\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-10-01\",\n    \"checkout\": \"2026-10-05\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование без обязательного параметра totalprice"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (missing depositpaid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is not 200\", () => {",
+                  "    pm.expect(pm.response.code).to.not.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"No bookingid in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"bookingid\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 100,\n  \"bookingdates\": {\n    \"checkin\": \"2026-10-01\",\n    \"checkout\": \"2026-10-05\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование без обязательного параметра depositpaid"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (missing bookingdates)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is not 200\", () => {",
+                  "    pm.expect(pm.response.code).to.not.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"No bookingid in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"bookingid\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"additionalneeds\": \"Breakfast\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование без обязательных параметров bookingdates-checkin+checkout"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (missing checkin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is not 200\", () => {",
+                  "    pm.expect(pm.response.code).to.not.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"No bookingid in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"bookingid\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkout\": \"2026-10-05\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование без обязательного параметра bookingdates-checkin"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (missing checkout)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is not 200\", () => {",
+                  "    pm.expect(pm.response.code).to.not.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"No bookingid in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"bookingid\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-10-01\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование без обязательного параметра bookingdates-checkout"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (missing addditionalneeds)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is not 200\", () => {",
+                  "    pm.expect(pm.response.code).to.not.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"No bookingid in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"bookingid\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-10-01\",\n    \"checkout\": \"2026-10-05\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование без обязательного параметра additionalneeds"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (invalid date format)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", () => {",
+                  "    pm.expect([400]).to.include(pm.response.code);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"01-10-2026\",\n    \"checkout\": \"15-10-2026\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование с использованием некорректного формата даты (DD-MM-YYYY)"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (invalid date format - text instead data)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", () => {",
+                  "    pm.expect([400]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"date1\",\n    \"checkout\": \"01-10-2026\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование с использованием некорректного формата даты (случайная текстовая строка)"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ POST Create Booking (wrong Content-Type)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Server rejects non-JSON content-type\", () => {",
+                  "    pm.expect([400, 415]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "firstname=User"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Попытка создать бронирование с использованием некорректного Content-Type"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ PUT Update Booking (no token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403\", () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test(\"Body is 'Forbidden'\", () => {",
+                  "    pm.expect(pm.response.text()).to.eql(\"Forbidden\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 100,\n  \"depositpaid\": false,\n  \"bookingdates\": {\n    \"checkin\": \"2026-10-01\",\n    \"checkout\": \"2026-10-10\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "1"
+              ]
+            },
+            "description": "Попытка обновить бронь без использование токенов авторизации (ID брони прописан заранее)"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ PUT Update Booking (invalid token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403\", () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test(\"No booking data in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"firstname\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token=wrongtoken"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 100,\n  \"depositpaid\": false,\n  \"bookingdates\": {\n    \"checkin\": \"2026-10-01\",\n    \"checkout\": \"2026-10-10\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "1"
+              ]
+            },
+            "description": "Попытка обновить бронь с использованием некорректного токена Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ PUT Update Booking (invalid auth)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403\", () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test(\"No booking data in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"firstname\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Basic aW5jb3JyZWN0dXNlcjppbmNvcnJlY3RwYXNz"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 100,\n  \"depositpaid\": false,\n  \"bookingdates\": {\n    \"checkin\": \"2026-10-01\",\n    \"checkout\": \"2026-10-10\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "1"
+              ]
+            },
+            "description": "Попытка обновить бронь с использованием некорректного токена авторизации"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ PUT Update Booking (wrong ID, valid token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", () => {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"No booking data in response\", () => {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"firstname\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"User\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 100,\n  \"depositpaid\": false,\n  \"bookingdates\": {\n    \"checkin\": \"2026-10-01\",\n    \"checkout\": \"2026-10-10\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/987654321",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "987654321"
+              ]
+            },
+            "description": "Попытка обновить бронь с использованием корректного токена авторизации, но для несуществующего ID"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ DELETE Booking (no token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403\", () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "1"
+              ]
+            },
+            "description": "Попытка удалить бронь без использования токена авторизации"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ DELETE Booking (invalid token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403\", () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token=invalid_token_xyz"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "1"
+              ]
+            },
+            "description": "Попытка удалить бронь с использованием некорректного токена авторизации в Cookies"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ DELETE Booking (invalid auth)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403\", () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Basic aW5jb3JyZWN0dXNlcjppbmNvcnJlY3RwYXNz"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "1"
+              ]
+            },
+            "description": "Попытка удалить бронь с использованием некорректного токена авторизации"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ DELETE Booking (wrong ID,  valid token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Restful Booker возвращает 405 Method Not Allowed для несуществующего ID при DELETE.",
+                  "// Фиксируем текущее поведение API.",
+                  "pm.test(\"Status is 404 OR 405 (known API behavior)\", () => {",
+                  "    pm.expect([404, 405]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"token\")) {\r",
+                  "    pm.sendRequest({\r",
+                  "        url: pm.collectionVariables.get(\"baseUrl\") + \"/auth\",\r",
+                  "        method: \"POST\",\r",
+                  "        header: {\r",
+                  "            \"Content-Type\": \"application/json\",\r",
+                  "            \"Accept\": \"application/json\"\r",
+                  "        },\r",
+                  "        body: {\r",
+                  "            mode: \"raw\",\r",
+                  "            raw: JSON.stringify({\r",
+                  "                username: \"admin\",\r",
+                  "                password: \"password123\"\r",
+                  "            })\r",
+                  "        }\r",
+                  "    }, (err, res) => {\r",
+                  "        if (err) {\r",
+                  "            console.error(\"Auth failed:\", err);\r",
+                  "            return;\r",
+                  "        }\r",
+                  "        pm.collectionVariables.set(\"token\", res.json().token);\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/987654321",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "987654321"
+              ]
+            },
+            "description": "Попытка удалить бронь с использованием корректного токена авторизации в Cookies, но для несуществующего ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5 Booking - Sort",
+      "item": [
+        {
+          "name": "✅ GET Filter by names",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array of booking ids\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    jsonData.forEach(item => {",
+                  "        pm.expect(item).to.have.property(\"bookingid\");",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?firstname=John&lastname=Doe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "firstname",
+                  "value": "John"
+                },
+                {
+                  "key": "lastname",
+                  "value": "Doe"
+                }
+              ]
+            },
+            "description": "Сортировка бронирований по имени и фамилии клиента"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ GET Filter by firstname",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array of booking ids\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    jsonData.forEach(item => {",
+                  "        pm.expect(item).to.have.property(\"bookingid\");",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?firstname=Jason",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "firstname",
+                  "value": "Jason"
+                }
+              ]
+            },
+            "description": "Сортировка бронирований по имени клиента"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ GET Filter by lastname",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array of booking ids\", () => {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    jsonData.forEach(item => {",
+                  "        pm.expect(item).to.have.property(\"bookingid\");",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?lastname=Doe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "lastname",
+                  "value": "Doe"
+                }
+              ]
+            },
+            "description": "Сортировка бронирований по фамилии клиента"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ GET Filter by dates",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", () => {",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?checkin=2026-07-01&checkout=2026-11-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "checkin",
+                  "value": "2026-07-01"
+                },
+                {
+                  "key": "checkout",
+                  "value": "2026-11-01"
+                }
+              ]
+            },
+            "description": "Сортировка бронирований по датам checkin и checkout"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ GET Filter by checkin date",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", () => {",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?checkin=2026-08-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "checkin",
+                  "value": "2026-08-01"
+                }
+              ]
+            },
+            "description": "Сортировка бронирований по дате checkin"
+          },
+          "response": []
+        },
+        {
+          "name": "✅ GET Filter by checkout date",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", () => {",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?checkout=2026-08-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "checkout",
+                  "value": "2026-08-01"
+                }
+              ]
+            },
+            "description": "Сортировка бронирований по дате checkout"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ GET Filter (empty result)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is empty array for unknown name\", () => {",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\").that.is.empty;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?firstname=NoFirstName&lastname=NoLastName",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "firstname",
+                  "value": "NoFirstName"
+                },
+                {
+                  "key": "lastname",
+                  "value": "NoLastName"
+                }
+              ]
+            },
+            "description": "Сортировка бронирований по несуществующим имени и фамилии клиента"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ GET Filter (invalid date format - str)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?checkin=incorrectdate&checkout=2026-11-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "checkin",
+                  "value": "incorrectdate"
+                },
+                {
+                  "key": "checkout",
+                  "value": "2026-11-01"
+                }
+              ]
+            },
+            "description": "Сортировка бронирований по дате некорректного формата (строка вместо даты)"
+          },
+          "response": []
+        },
+        {
+          "name": "❌ GET Filter (invalid date format - YYYY-DD-MM)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?checkin=2026-21-01&checkout=2026-09-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "checkin",
+                  "value": "2026-21-01"
+                },
+                {
+                  "key": "checkout",
+                  "value": "2026-09-01"
+                }
+              ]
+            },
+            "description": "Сортировка бронирований по дате некорректного формата (YYYY-DD-MM)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://restful-booker.herokuapp.com"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "basicAuthHeader",
+      "value": "YWRtaW46cGFzc3dvcmQxMjM="
+    },
+    {
+      "key": "bookingId",
+      "value": ""
+    },
+    {
+      "key": "bookingId2",
+      "value": ""
+    }
+  ]
+}
